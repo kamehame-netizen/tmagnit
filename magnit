@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATP Maker - Kurikulum Merdeka</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load React, ReactDOM, and Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#3b82f6', // Biru elektrik cerah
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Mengubah latar belakang seluruh halaman menjadi biru tua yang sangat jelas & profesional */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0b132b; /* Midnight Navy */
+            color: #f1f5f9;
+        }
+        .glass-panel {
+            background: rgba(28, 37, 65, 0.95); /* Biru tua solid */
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.3); /* Border biru transparan */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+        }
+        /* Panel biru tua yang jelas dan kokoh */
+        .blue-form-panel {
+            background-color: #1c2541; /* Royal Navy Blue */
+            border: 1px solid #3b82f6; /* Border biru elektrik */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+        
+        /* Loading Animation */
+        .pulse-dots::after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);}
+            40% { color: white; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);}
+            60% { text-shadow: .25em 0 0 white, .5em 0 0 rgba(0,0,0,0);}
+            80%, 100% { text-shadow: .25em 0 0 white, .5em 0 0 white;}
+        }
+        .animation-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Custom Icon components
+        const BookOpenIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>;
+
+        const BrainCircuitIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="15%" height="15%">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <radialGradient id="bulb-grad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fff3a1" />
+      <stop offset="50%" stop-color="#ffd043" />
+      <stop offset="100%" stop-color="#ff9d1c" />
+    </radialGradient>
+
+    <radialGradient id="aura-grad" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#ffe67a" stop-opacity="0.4" />
+      <stop offset="60%" stop-color="#ff9d1c" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#ff9d1c" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <circle cx="400" cy="220" r="180" fill="url(#aura-grad)" filter="url(#glow)" />
+
+  <g stroke="#ff9d1c" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.9">
+    <line x1="400" y1="50" x2="400" y2="80" stroke-width="5" />
+    <path d="M 350,75 A 150,150 0 0,1 450,75" stroke-dasharray="10,15" />
+    
+    <line x1="510" y1="110" x2="535" y2="85" stroke-width="5" />
+    <path d="M 495,120 A 150,150 0 0,1 545,170" stroke-dasharray="10,15" />
+
+    <line x1="550" y1="220" x2="580" y2="220" stroke-width="5" />
+    <path d="M 545,250 A 150,150 0 0,1 505,305" stroke-dasharray="10,15" />
+
+    <line x1="290" y1="110" x2="265" y2="85" stroke-width="5" />
+    <path d="M 305,120 A 150,150 0 0,0 255,170" stroke-dasharray="10,15" />
+
+    <line x1="250" y1="220" x2="220" y2="220" stroke-width="5" />
+    <path d="M 255,250 A 150,150 0 0,0 295,305" stroke-dasharray="10,15" />
+    
+    <line x1="515" y1="270" x2="540" y2="285" />
+    <line x1="285" y1="270" x2="260" y2="285" />
+    <line x1="465" y1="100" x2="480" y2="80" />
+    <line x1="335" y1="100" x2="320" y2="80" />
+  </g>
+
+  <path d="M 350,300 C 330,270 320,240 320,200 A 80,80 0 1,1 480,200 C 480,240 470,270 450,300 Z" 
+        fill="#ffae19" filter="url(#glow)" opacity="0.6"/>
+
+  <path d="M 350,300 C 330,270 320,240 320,200 A 80,80 0 1,1 480,200 C 480,240 470,270 450,300 Z" 
+        fill="url(#bulb-grad)" stroke="#2b363f" stroke-width="6" stroke-linejoin="round" />
+
+  <path d="M 340,180 A 65,65 0 0,1 430,140" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.6" />
+
+  <g stroke="#ff9d1c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow)">
+    <path d="M 375,300 L 380,230 C 380,220 370,210 380,205 C 390,200 390,215 400,205 C 410,215 410,200 420,205 C 430,210 420,220 420,230 L 425,300" />
+  </g>
+  <g stroke="#e67e22" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 375,300 L 380,230 C 380,220 370,210 380,205 C 390,200 390,215 400,205 C 410,215 410,200 420,205 C 430,210 420,220 420,230 L 425,300" />
+  </g>
+
+  <g fill="#5a636c" stroke="#2b363f" stroke-width="5" stroke-linejoin="round">
+    <path d="M 350,300 C 350,290 450,290 450,300 L 445,315 C 445,325 355,325 355,315 Z" />
+    <path d="M 353,315 C 353,305 447,305 447,315 L 442,330 C 442,340 358,340 358,330 Z" />
+    <path d="M 356,330 C 356,320 444,320 444,330 L 438,345 C 438,355 362,355 362,345 Z" />
+    <path d="M 370,345 C 370,365 430,365 430,345 Z" fill="#3a4146" />
+  </g>
+
+  <line x1="400" y1="360" x2="400" y2="420" stroke="#2b363f" stroke-width="6" stroke-linecap="round" />
+</svg>;
+
+        const ListOrderedIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="10" x2="21" y1="6" y2="6"></line><line x1="10" x2="21" y1="12" y2="12"></line><line x1="10" x2="21" y1="18" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>;
+        const TargetIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>;
+        const AlertCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>;
+        const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
+        const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+        const DownloadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>;
+        const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+        const SparklesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>;
+
+        const DAFTAR_MAPEL = {
+            'PAUD': ['Pembelajaran Tematik / PAUD'],
+            'SD': [ 'Pendidikan Agama Islam dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Ilmu Pengetahuan Alam dan Sosial (IPAS)', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Seni Rupa', 'Seni Musik', 'Seni Tari', 'Seni Teater', 'Koding & AI', 'Muatan Lokal' ],
+            'SMP': [ 'Pendidikan Agama Islam dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Ilmu Pengetahuan Alam (IPA)', 'Ilmu Pengetahuan Sosial (IPS)', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Informatika', 'Seni Rupa', 'Seni Musik', 'Seni Tari', 'Seni Teater', 'Prakarya', 'Muatan Lokal' ],
+            'SMA_E': [ 'Pendidikan Agama Islam dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Ilmu Pengetahuan Alam (IPA)', 'Ilmu Pengetahuan Sosial (IPS)', 'Sejarah', 'Ekonomi', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Informatika', 'Seni dan Prakarya', 'Muatan Lokal' ],
+            'SMA_F': [
+                { group: 'Kelompok Mata Pelajaran Umum', items: ['Pendidikan Agama Islam dan Budi Pekerti', 'Pendidikan Pancasila', 'Bahasa Indonesia', 'Matematika', 'Bahasa Inggris', 'Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)', 'Sejarah', 'Seni dan Prakarya'] },
+                { group: 'Mata Pelajaran Pilihan (MIPA)', items: ['Biologi', 'Kimia', 'Fisika', 'Matematika Tingkat Lanjut'] },
+                { group: 'Mata Pelajaran Pilihan (IPS & Humaniora)', items: ['Sosiologi', 'Ekonomi', 'Geografi', 'Antropologi'] },
+                { group: 'Mata Pelajaran Pilihan (Bahasa & Sastra)', items: ['Bahasa Indonesia Tingkat Lanjut', 'Bahasa Inggris Tingkat Lanjut', 'Bahasa Arab', 'Bahasa Mandarin', 'Bahasa Jepang', 'Bahasa Korea', 'Bahasa Jerman', 'Bahasa Prancis'] },
+                { group: 'Mata Pelajaran Pilihan (Vokasi & Prakarya)', items: ['Informatika', 'Prakarya dan Kewirausahaan (PKWU)'] }
+            ]
+        };
+
+        // Smart Knowledge Base for Automated Injection
+        const dbMateriEsensial = {
+            "Bahasa Indonesia": {
+                "Fase A": "Menyimak teks percakapan sederhana, deskripsi sederhana, cerita anak, teks cerita bergambar, teks instruksi, cerita pengalaman, fabel, dan puisi anak. Membaca dan memirsa kata-kata sederhana topik diri, keluarga, kesehatan, lingkungan. Menulis permulaan, teks sederhana.",
+                "Fase B": "Menyimak eksposisi sederhana, argumentasi sederhana, laporan perjalanan, petunjuk arah, cerita inspiratif, cerita anak, dongeng, dan puisi anak. Membaca ide pokok. Menulis kalimat beragam berkonteks.",
+                "Fase C": "Menganalisis informasi dari teks prosedur, pengumuman, eksplanasi, pantun, drama anak, cerita rakyat. Menulis teks sederhana dengan kalimat kompleks, kosakata denotatif & konotatif.",
+                "Fase D": "Menganalisis berita, iklan, pidato, cerpen, drama, puisi. Menulis gagasan logis, kritis, kreatif dengan kosakata baru (denotatif, konotatif, kiasan).",
+                "Fase E": "Mengevaluasi laporan observasi kompleks, anekdot, negosiasi, cerpen, hikayat. Memublikasikan karya.",
+                "Fase F": "Mengevaluasi argumentasi kompleks, persuasi, karya ilmiah, puisi, drama, novel. Berbicara sistematis.",
+                "Fase F Tingkat Lanjut": "Teks konteks sosial, akademis, dunia kerja, sastra Indonesia & dunia. Memodifikasi ke bentuk multimedia."
+            },
+            "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)": {
+                "Fase A": "Gerak lokomotor, non-lokomotor, manipulatif dasar; Prinsip fair play; Reaksi tubuh saat aktivitas; Makanan bergizi dan penanganan cedera ringan.",
+                "Fase B": "Penghalusan gerak fundamental dan strategi sederhana (menipu lawan, zig-zag); Etika fair play (menerima kalah/menang); Bahaya perilaku sedenter (kurang gerak); Penanganan cedera sedang (RICE: Rest, Ice, Compression, Elevation)."
+            }
+        };
+
+        const getJenjang = (faseStr) => {
+            if (faseStr.includes("PAUD") || faseStr.includes("Fondasi")) return "PAUD";
+            if (faseStr.includes("SD")) return "SD";
+            if (faseStr.includes("SMP")) return "SMP";
+            if (faseStr.includes("SMA_E") || faseStr.includes("Fase E")) return "SMA_E";
+            if (faseStr.includes("SMA_F") || faseStr.includes("Fase F")) return "SMA_F";
+            return "SD";
+        };
+
+        const getFaseKey = (faseStr) => {
+            if (faseStr.includes("Fase A")) return "Fase A";
+            if (faseStr.includes("Fase B")) return "Fase B";
+            if (faseStr.includes("Fase C")) return "Fase C";
+            if (faseStr.includes("Fase D")) return "Fase D";
+            if (faseStr.includes("Fase E")) return "Fase E";
+            if (faseStr.includes("Fase F")) return "Fase F";
+            return null;
+        }
+
+        const App = () => {
+            // App Navigation State
+            const [appState, setAppState] = useState("welcome"); 
+            const [welcomeError, setWelcomeError] = useState(""); // State khusus error form welcome
+
+            // Profile State
+            const [profile, setProfile] = useState({
+                namaGuru: "",
+                satuanPendidikan: "",
+                tahunPelajaran: "2025/2026",
+                namaKepsek: "",
+                nipKepsek: "",
+                nipGuru: ""
+            });
+
+            // Generator States
+            const [cpInput, setCpInput] = useState("");
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [result, setResult] = useState(null);
+            const [error, setError] = useState("");
+            const [activeTab, setActiveTab] = useState("analisis");
+            const [copied, setCopied] = useState(false);
+            const [copyErrorMsg, setCopyErrorMsg] = useState("");
+            
+            const [fase, setFase] = useState("Fase B (Kelas 3-4 SD)");
+            const [mataPelajaran, setMataPelajaran] = useState("Pendidikan Pancasila");
+            
+            const [alternatifTP, setAlternatifTP] = useState("Alternatif 2 (Analisis Kompetensi & Konten)");
+            const [metodePengurutan, setMetodePengurutan] = useState("Otomatis (Diserahkan ke AI)");
+
+            const defaultCP = "Pada akhir fase B, murid menunjukkan pemahaman dan intuisi bilangan (number sense) pada bilangan cacah sampai 10.000. Murid dapat membaca dan menulis; membandingkan dan mengurutkan bilangan; menentukan dan menggunakan nilai tempat; melakukan komposisi dan dekomposisi bilangan cacah sampai 10.000. Murid dapat melakukan dan menyelesaikan masalah operasi bilangan penjumlahan dan pengurangan bilangan cacah sampai 1.000, melakukan dan menyelesaikan masalah operasi perkalian dan pembagian bilangan cacah sampai 100 dengan bantuan benda konkret, gambar and simbol. Murid mengenal kelipatan dan faktor.";
+
+            const handleFaseChange = (e) => {
+                const newFase = e.target.value;
+                setFase(newFase);
+                
+                const jenjang = getJenjang(newFase);
+                const mapelList = DAFTAR_MAPEL[jenjang];
+                
+                let firstMapel = "";
+                if (jenjang === 'SMA_F' && mapelList && mapelList.length > 0) {
+                    firstMapel = mapelList[0].items[0];
+                } else if (mapelList && mapelList.length > 0) {
+                    firstMapel = mapelList[0];
+                }
+                
+                setMataPelajaran(firstMapel);
+            };
+
+            const startApp = () => {
+                setWelcomeError("");
+                if (!profile.namaGuru || !profile.namaKepsek || !profile.satuanPendidikan) {
+                    setWelcomeError("Mohon lengkapi bagian identitas yang wajib diisi (*).");
+                    return;
+                }
+                setAppState("main");
+            };
+
+            const sanitizeJSON = (rawStr) => {
+                let cleaned = rawStr.trim();
+                cleaned = cleaned.replace(/^```json\s*/i, '');
+                cleaned = cleaned.replace(/^```\s*/, '');
+                cleaned = cleaned.replace(/\s*```$/i, '');
+                return cleaned.trim();
+            };
+
+            const generateATP = async () => {
+                if (!cpInput.trim()) {
+                    setError("Silakan masukkan teks Capaian Pembelajaran terlebih dahulu.");
+                    return;
+                }
+
+                setIsGenerating(true);
+                setError("");
+                setResult(null);
+
+                const currentFaseKey = getFaseKey(fase);
+                let specificMaterialInstruction = "";
+                
+                if (dbMateriEsensial[mataPelajaran] && dbMateriEsensial[mataPelajaran][currentFaseKey]) {
+                    const exactMaterial = dbMateriEsensial[mataPelajaran][currentFaseKey];
+                    specificMaterialInstruction = `6. Materi Esensial Spesifik: Anda WAJIB MENGINTEGRASIKAN materi esensial berikut ke dalam rumusan Tujuan Pembelajaran (TP). Pastikan kata kunci spesifik dari materi ini tertera jelas:\n"${exactMaterial}"`;
+                } else {
+                    specificMaterialInstruction = `6. Materi Esensial: Sebagai AI Ahli Kurikulum Merdeka, Anda WAJIB menyuntikkan materi esensial spesifik (topik relevan) ke dalam rumusan TP.`;
+                }
+
+                const apiKey = ""; // API key will be provided by execution environment
+                const modelName = "gemini-2.5-flash-preview-09-2025"; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+                const systemInstruction = `
+Anda adalah seorang Pakar Kurikulum Merdeka.
+Tugas Anda adalah memecah Capaian Pembelajaran (CP) menjadi Alur Tujuan Pembelajaran (ATP).
+
+Panduan Analisis & Aturan Ketat:
+1. Target Fase/Kelas: Target penyusunan adalah untuk ${fase} pada mata pelajaran ${mataPelajaran}.
+2. Alternatif Perumusan TP: Gunakan ${alternatifTP}. 
+3. ATURAN "1 TP = 1 LINGKUP MATERI": Anda WAJIB memastikan 1 TP hanya memuat 1 lingkup materi esensial.
+4. Susun Alur Tujuan Pembelajaran (ATP): Urutkan TP agar logis dipelajari.
+5. Metode Pengurutan: Gunakan metode "${metodePengurutan}".
+${specificMaterialInstruction}
+6. Pembagian Semester: Bagi ATP dalam kelas ke dalam 'Semester Ganjil' dan 'Semester Genap' secara seimbang.
+
+Output Anda HARUS 100% dalam format JSON valid mengikuti skema ini, TANPA TEKS LAIN:
+{
+  "analisis": {
+    "kompetensi": ["kata kerja 1", "kata kerja 2"],
+    "konten": ["materi esensial 1", "materi esensial 2"]
+  },
+  "tujuan_pembelajaran": [
+    {
+      "kompetensi": "Satu kata kerja operasional",
+      "lingkup_materi": "Satu konten esensial/konsep utama",
+      "teks_tp": "Murid dapat [kompetensi] [lingkup_materi]"
+    }
+  ],
+  "pembagian_kelas": [
+    {
+      "kelas": "Nama Kelas (Misal: Kelas 5)",
+      "semester_ganjil": [
+        {
+          "urutan": 1,
+          "tp": "Murid dapat [kompetensi] [lingkup_materi]",
+          "metode_pengurutan": "Nama Metode",
+          "rasional": "Alasan singkat"
+        }
+      ],
+      "semester_genap": [
+        {
+          "urutan": 3,
+          "tp": "Murid dapat [kompetensi] [lingkup_materi]",
+          "metode_pengurutan": "Nama Metode",
+          "rasional": "Alasan singkat"
+        }
+      ]
+    }
+  ]
+}
+`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: `Buatkan ATP dari Capaian Pembelajaran berikut untuk ${fase} - ${mataPelajaran}:\n\n${cpInput}` }] }],
+                    systemInstruction: { parts: [{ text: systemInstruction }] },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        temperature: 0.2
+                    }
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        const errMsg = errData?.error?.message || `HTTP error! status: ${response.status}`;
+                        throw new Error(errMsg);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.candidates && data.candidates.length > 0) {
+                        const rawText = data.candidates[0].content.parts[0].text;
+                        const cleanedText = sanitizeJSON(rawText);
+                        
+                        try {
+                            const parsedData = JSON.parse(cleanedText);
+                            setResult(parsedData);
+                            setActiveTab("alur");
+                        } catch (parseErr) {
+                            console.error("Parse error. Raw AI Output:", rawText);
+                            setError("Format data dari AI tidak sesuai standar JSON. Silakan coba klik tombol generate lagi.");
+                        }
+                    } else {
+                        setError("AI tidak mengembalikan hasil yang valid.");
+                    }
+                } catch (err) {
+                    console.error("API Fetch Error:", err);
+                    if (err.message.includes("API key not valid")) {
+                        setError("API Key tidak valid. Lingkungan eksekusi mungkin tidak menyediakan key yang valid.");
+                    } else {
+                        setError(`Gagal terhubung ke AI. Detail: ${err.message}`);
+                    }
+                } finally {
+                    setIsGenerating(false);
+                }
+            };
+
+            const handleOrderChange = (kelasIdx, semesterType, currentItemIdx, targetItemIdx) => {
+                if (currentItemIdx === targetItemIdx) return;
+                setResult(prevResult => {
+                    if (!prevResult) return prevResult;
+                    const newResult = { ...prevResult };
+                    const newPembagianKelas = [...newResult.pembagian_kelas];
+                    const targetKelas = { ...newPembagianKelas[kelasIdx] };
+                    const targetList = [...(targetKelas[semesterType] || [])];
+
+                    const [item] = targetList.splice(currentItemIdx, 1);
+                    targetList.splice(targetItemIdx, 0, item);
+
+                    targetKelas[semesterType] = targetList;
+                    
+                    let currentUrutan = 1;
+                    if (targetKelas.semester_ganjil) targetKelas.semester_ganjil.forEach(item => item.urutan = currentUrutan++);
+                    if (targetKelas.semester_genap) targetKelas.semester_genap.forEach(item => item.urutan = currentUrutan++);
+
+                    newPembagianKelas[kelasIdx] = targetKelas;
+                    newResult.pembagian_kelas = newPembagianKelas;
+                    return newResult;
+                });
+            };
+
+            const handleKelasChange = (currentKelasIdx, currentSemester, itemIdx, targetKelasIdx) => {
+                if (currentKelasIdx === targetKelasIdx) return;
+                setResult(prevResult => {
+                    if (!prevResult) return prevResult;
+                    const newResult = { ...prevResult };
+                    const newPembagianKelas = [...newResult.pembagian_kelas];
+                    
+                    const sourceKelas = { ...newPembagianKelas[currentKelasIdx] };
+                    const targetKelas = { ...newPembagianKelas[targetKelasIdx] };
+                    
+                    if (!sourceKelas[currentSemester] || sourceKelas[currentSemester].length <= itemIdx) return prevResult;
+
+                    const itemToMove = sourceKelas[currentSemester][itemIdx];
+                    sourceKelas[currentSemester] = sourceKelas[currentSemester].filter((_, i) => i !== itemIdx);
+                    
+                    if (!targetKelas[currentSemester]) targetKelas[currentSemester] = [];
+                    targetKelas[currentSemester] = [...targetKelas[currentSemester], itemToMove];
+
+                    [sourceKelas, targetKelas].forEach(kelas => {
+                        let currentUrutan = 1;
+                        if (kelas.semester_ganjil) kelas.semester_ganjil.forEach(item => item.urutan = currentUrutan++);
+                        if (kelas.semester_genap) kelas.semester_genap.forEach(item => item.urutan = currentUrutan++);
+                    });
+
+                    newPembagianKelas[currentKelasIdx] = sourceKelas;
+                    newPembagianKelas[targetKelasIdx] = targetKelas;
+                    newResult.pembagian_kelas = newPembagianKelas;
+                    return newResult;
+                });
+            };
+
+            const handleSemesterChange = (kelasIdx, currentSemester, targetSemester, itemIdx) => {
+                if (currentSemester === targetSemester) return;
+                setResult(prevResult => {
+                    if (!prevResult) return prevResult;
+                    const newResult = { ...prevResult };
+                    const newPembagianKelas = [...newResult.pembagian_kelas];
+                    const targetKelas = { ...newPembagianKelas[kelasIdx] };
+                    
+                    if(!targetKelas[currentSemester] || targetKelas[currentSemester].length <= itemIdx) return prevResult;
+
+                    const itemToMove = targetKelas[currentSemester][itemIdx];
+                    targetKelas[currentSemester] = targetKelas[currentSemester].filter((_, i) => i !== itemIdx);
+                    
+                    if (!targetKelas[targetSemester]) targetKelas[targetSemester] = [];
+                    targetKelas[targetSemester] = [...targetKelas[targetSemester], itemToMove];
+
+                    let currentUrutan = 1;
+                    if (targetKelas.semester_ganjil) targetKelas.semester_ganjil.forEach(item => item.urutan = currentUrutan++);
+                    if (targetKelas.semester_genap) targetKelas.semester_genap.forEach(item => item.urutan = currentUrutan++);
+
+                    newPembagianKelas[kelasIdx] = targetKelas;
+                    newResult.pembagian_kelas = newPembagianKelas;
+                    return newResult;
+                });
+            };
+
+            const handleCopy = () => {
+                if (!result) return;
+                setCopyErrorMsg("");
+                
+                let textToCopy = "=== HASIL ANALISIS CAPAIAN PEMBELAJARAN ===\n\n";
+                textToCopy += "1. KOMPETENSI:\n- " + result.analisis.kompetensi.join("\n- ") + "\n\n";
+                textToCopy += "2. LINGKUP MATERI:\n- " + result.analisis.konten.join("\n- ") + "\n\n";
+                
+                textToCopy += "=== TUJUAN PEMBELAJARAN ===\n";
+                result.tujuan_pembelajaran.forEach((tp, i) => {
+                    textToCopy += `${i+1}. ${tp.teks_tp || tp}\n`;
+                });
+                textToCopy += "\n";
+
+                textToCopy += "=== ALUR TUJUAN PEMBELAJARAN (ATP) ===\n";
+                if(result.pembagian_kelas) {
+                    result.pembagian_kelas.forEach(kelasItem => {
+                        textToCopy += `\n[ PERUNTUKAN: ${kelasItem.kelas.toUpperCase()} ]\n`;
+                        
+                        textToCopy += `\n--- SEMESTER GANJIL ---\n`;
+                        (kelasItem.semester_ganjil || []).forEach(item => {
+                            textToCopy += `Urutan ${item.urutan}: ${item.tp}\n`;
+                        });
+
+                        textToCopy += `\n--- SEMESTER GENAP ---\n`;
+                        (kelasItem.semester_genap || []).forEach(item => {
+                            textToCopy += `Urutan ${item.urutan}: ${item.tp}\n`;
+                        });
+                    });
+                }
+
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed";  
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    console.error('Failed to copy', err);
+                    setCopyErrorMsg("Browser Anda memblokir fitur copy otomatis. Silakan blok teks secara manual.");
+                    setTimeout(() => setCopyErrorMsg(""), 4000);
+                }
+                document.body.removeChild(textArea);
+            };
+
+            const exportToWord = () => {
+                if (!result || !result.pembagian_kelas) return;
+
+                const faseLetter = fase.match(/Fase\s+([A-F]|Fondasi)/i)?.[1] || "";
+                const kelasArr = result.pembagian_kelas.map(k => k.kelas.replace(/[^0-9]/g, '')).filter(Boolean);
+                const kelasStr = kelasArr.length > 0 ? kelasArr.join(' dan ') : '';
+                const faseKelasText = faseLetter + (kelasStr ? '/' + kelasStr : '');
+
+                const today = new Date();
+                const dd = String(today.getDate()).padStart(2, '0');
+                const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                const mm = monthNames[today.getMonth()];
+                const yyyy = today.getFullYear();
+                const currentDate = `${dd} ${mm} ${yyyy}`;
+
+                let contentBlocks = '';
+
+                result.pembagian_kelas.forEach((kelasItem) => {
+                    let tpListHTML = '<ul style="margin-top: 0; padding-left: 15px; margin-bottom: 0;">';
+                    result.tujuan_pembelajaran.forEach(tp => {
+                        tpListHTML += `<li style="margin-bottom: 6px;">${(tp.teks_tp || tp).replace(/^TP \d+:\s*/, '')}</li>`;
+                    });
+                    tpListHTML += '</ul>';
+
+                    let atpGanjilHTML = '<div style="font-weight: bold; margin-bottom: 4px;">SEMESTER GANJIL:</div><ol style="margin-top: 0; padding-left: 15px; margin-bottom: 12px;">';
+                    (kelasItem.semester_ganjil || []).forEach(item => {
+                        atpGanjilHTML += `<li style="margin-bottom: 6px;">${item.tp.replace(/^TP \d+:\s*/, '')}</li>`;
+                    });
+                    atpGanjilHTML += '</ol>';
+
+                    let atpGenapHTML = '<div style="font-weight: bold; margin-bottom: 4px;">SEMESTER GENAP:</div><ol style="margin-top: 0; padding-left: 15px; margin-bottom: 0;">';
+                    (kelasItem.semester_genap || []).forEach(item => {
+                        atpGenapHTML += `<li style="margin-bottom: 6px;">${item.tp.replace(/^TP \d+:\s*/, '')}</li>`;
+                    });
+                    atpGenapHTML += '</ol>';
+
+                    contentBlocks += `
+                        <p style="font-weight: bold; font-size: 11pt; margin-top: 15px; margin-bottom: 10px;">
+                            Alur Tujuan Pembelajaran ${kelasItem.kelas}:
+                        </p>
+                        <table style="border-collapse: collapse; width: 100%; table-layout: fixed; margin-bottom: 20px;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid black; padding: 8px; width: 15%; text-align: center; background-color: #f2f2f2;">Mata Pelajaran</th>
+                                    <th style="border: 1px solid black; padding: 8px; width: 30%; text-align: center; background-color: #f2f2f2;">Capaian Pembelajaran</th>
+                                    <th style="border: 1px solid black; padding: 8px; width: 25%; text-align: center; background-color: #f2f2f2;">Tujuan Pembelajaran</th>
+                                    <th style="border: 1px solid black; padding: 8px; width: 30%; text-align: center; background-color: #f2f2f2;">Alur Tujuan Pembelajaran</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 1px solid black; padding: 8px; vertical-align: top; text-align: center;">${mataPelajaran}</td>
+                                    <td style="border: 1px solid black; padding: 8px; vertical-align: top; text-align: justify;">${cpInput}</td>
+                                    <td style="border: 1px solid black; padding: 8px; vertical-align: top;">${tpListHTML}</td>
+                                    <td style="border: 1px solid black; padding: 8px; vertical-align: top;">
+                                        ${atpGanjilHTML}
+                                        ${atpGenapHTML}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                });
+
+                const html = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                        <meta charset="utf-8">
+                        <style>
+                            @page WordSection1 { size: 29.7cm 21cm; margin: 2cm; mso-page-orientation: landscape; }
+                            div.WordSection1 { page: WordSection1; }
+                            body { font-family: 'Times New Roman', serif; font-size: 11pt; color: #000; }
+                            table { border-collapse: collapse; width: 100%; }
+                            th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; word-wrap: break-word; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="WordSection1">
+                            <h1 style="text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 20px; text-transform: uppercase;">
+                                ALUR DAN TUJUAN PEMBELAJARAN (ATP) FASE ${faseLetter}
+                            </h1>
+                            
+                            <table style="width: 50%; border: none; margin-bottom: 20px; font-size: 11pt; font-weight: bold;">
+                                <tr><td style="border: none; padding: 2px; width: 35%;">Nama Sekolah</td><td style="border: none; padding: 2px; width: 65%;">: ${profile.satuanPendidikan}</td></tr>
+                                <tr><td style="border: none; padding: 2px;">Tahun Pelajaran</td><td style="border: none; padding: 2px;">: ${profile.tahunPelajaran}</td></tr>
+                                <tr><td style="border: none; padding: 2px;">Fase/Kelas</td><td style="border: none; padding: 2px;">: ${faseKelasText}</td></tr>
+                                <tr><td style="border: none; padding: 2px;">Mata Pelajaran</td><td style="border: none; padding: 2px;">: ${mataPelajaran}</td></tr>
+                            </table>
+
+                            ${contentBlocks}
+
+                            <table style="width: 100%; border: none; margin-top: 40px; page-break-inside: avoid;">
+                                <tr>
+                                    <td style="width: 50%; text-align: center; border: none; vertical-align: top;">
+                                        Mengetahui,<br>
+                                        Kepala Sekolah<br><br><br><br><br>
+                                        <b>${profile.namaKepsek}</b><br>
+                                        ${profile.nipKepsek ? `NIP. ${profile.nipKepsek}` : ''}
+                                    </td>
+                                    <td style="width: 50%; text-align: center; border: none; vertical-align: top;">
+                                        ................................., ${currentDate}<br>
+                                        Guru Kelas / Mata Pelajaran<br><br><br><br><br>
+                                        <b>${profile.namaGuru}</b><br>
+                                        ${profile.nipGuru ? `NIP. ${profile.nipGuru}` : ''}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ATP_${mataPelajaran.replace(/[^a-zA-Z0-9]/g, '_')}_${faseLetter}.doc`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const renderMapelOptions = () => {
+                const jenjang = getJenjang(fase);
+                const mapelList = DAFTAR_MAPEL[jenjang];
+                
+                if (!mapelList) return <option value="">Pilih Mata Pelajaran</option>;
+
+                if (jenjang === 'SMA_F') {
+                    return mapelList.map((group, idx) => (
+                        <optgroup key={idx} label={group.group} className="bg-[#111c33] text-white">
+                            {group.items.map((item, iIdx) => (
+                                <option key={iIdx} value={item}>{item}</option>
+                            ))}
+                        </optgroup>
+                    ));
+                } else {
+                    return mapelList.map((item, idx) => (
+                        <option key={idx} value={item} className="bg-[#111c33] text-white">{item}</option>
+                    ));
+                }
+            };
+
+            if (appState === "welcome") {
+                return (
+                    <div className="min-h-screen p-4 md:p-8 flex items-center justify-center bg-[#0b132b]">
+                        <div className="blue-form-panel p-8 rounded-xl w-full max-w-lg animation-fade-in shadow-2xl">
+                            <div className="text-center mb-6">
+                                <div className="inline-flex items-center justify-center rounded-2xl bg-slate-800 text-white mb-4 shadow-lg shadow-primary-500/30 "> 
+                                    <BrainCircuitIcon /> 
+                                </div>
+                                <h1 className="text-2xl font-bold text-white">Selamat Datang di ATP Maker</h1>
+                                <p className="text-sm text-blue-200 mt-2">
+                                    Isi data di bawah ini dengan benar. Data ini akan digunakan pada format dokumen ATP Anda.
+                                </p>
+                            </div>
+
+                            {welcomeError && (
+                                <div className="mb-4 p-3 bg-red-950/50 border border-red-500 text-red-200 text-sm rounded-xl flex gap-2 items-center font-medium">
+                                    <AlertCircleIcon /> {welcomeError}
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-blue-100 mb-1">Satuan Pendidikan <span className="text-red-400">*</span></label>
+                                    <input type="text" placeholder="Contoh: SDN 006 Tenggarong Seberang" value={profile.satuanPendidikan} onChange={e => setProfile({...profile, satuanPendidikan: e.target.value})} className="w-full p-3 border border-slate-700 bg-[#0f172a] text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 rounded-xl outline-none text-sm placeholder-slate-500" />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-semibold text-blue-100 mb-1">Tahun Pelajaran <span className="text-red-400">*</span></label>
+                                    <input type="text" placeholder="Contoh: 2025/2026" value={profile.tahunPelajaran} onChange={e => setProfile({...profile, tahunPelajaran: e.target.value})} className="w-full p-3 border border-slate-700 bg-[#0f172a] text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 rounded-xl outline-none text-sm placeholder-slate-500" />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-blue-100 mb-1">Nama Guru <span className="text-red-400">*</span></label>
+                                        <input type="text" placeholder="Nama & Gelar" value={profile.namaGuru} onChange={e => setProfile({...profile, namaGuru: e.target.value})} className="w-full p-3 border border-slate-700 bg-[#0f172a] text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 rounded-xl outline-none text-sm placeholder-slate-500" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-blue-100 mb-1">NIP Guru</label>
+                                        <input type="text" placeholder="Opsional" value={profile.nipGuru} onChange={e => setProfile({...profile, nipGuru: e.target.value})} className="w-full p-3 border border-slate-700 bg-[#0f172a] text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 rounded-xl outline-none text-sm placeholder-slate-500" />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-blue-100 mb-1">Nama Kepsek <span className="text-red-400">*</span></label>
+                                        <input type="text" placeholder="Nama & Gelar" value={profile.namaKepsek} onChange={e => setProfile({...profile, namaKepsek: e.target.value})} className="w-full p-3 border border-slate-700 bg-[#0f172a] text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 rounded-xl outline-none text-sm placeholder-slate-500" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-blue-100 mb-1">NIP Kepsek</label>
+                                        <input type="text" placeholder="Opsional" value={profile.nipKepsek} onChange={e => setProfile({...profile, nipKepsek: e.target.value})} className="w-full p-3 border border-slate-700 bg-[#0f172a] text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 rounded-xl outline-none text-sm placeholder-slate-500" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={startApp}
+                                className="w-full mt-8 py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-primary-500/30"
+                            >
+                                Mulai Menyusun ATP
+                            </button>
+
+                            <div className="mt-6 pt-4 border-t border-slate-700 text-center">
+                                <p className="text-xs text-blue-300 font-medium leading-relaxed">
+                                    <span className="text-white font-bold">Sasha Ariyanto</span><br/>
+                                    sasmiati45@admin.sd.belajar.id - 082254538142
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen p-4 md:p-8 flex flex-col items-center animation-fade-in bg-[#0b132b]">
+                    
+                    {/* Header */}
+                    <div className="w-full max-w-6xl mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="text-center md:text-left">
+
+
+                              
+
+
+
+
+                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-1">
+                                <BrainCircuitIcon />ATP Maker
+                            </h1>
+                            <p className="text-blue-200 mt-2 text-sm md:text-base">
+                                Cara Cerdas Menganalisis Capaian Pembelajaran Menjadi Tujuan Pembelajaran & Alur Tujuan Pembelajaran Pada Kurikulum Merdeka.
+                            </p>
+                        </div>
+                        <div className="bg-[#1c2541] px-4 py-2 rounded-xl shadow-lg border border-slate-700 flex items-center gap-3 text-sm">
+                            <div className="w-10 h-10 bg-[#0f172a] text-primary-500 rounded-full flex items-center justify-center border border-primary-500/30">
+                                <UserIcon />
+                            </div>
+                            <div>
+                                <p className="font-bold text-white leading-tight">{profile.namaGuru}</p>
+                                <p className="text-blue-200 text-xs">{profile.satuanPendidikan}</p>
+                            </div>
+                            <button onClick={() => setAppState("welcome")} className="ml-2 text-xs text-primary-400 hover:underline">Edit</button>
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        {/* Input Section - Left panel form */}
+                        <div className="col-span-1 lg:col-span-4 flex flex-col gap-4">
+                            <div className="blue-form-panel p-5 rounded-2xl">
+                                
+                                <div className="mb-4">
+                                    <label className="block text-sm font-semibold text-blue-100 mb-2">Pilih Fase / Jenjang</label>
+                                    <select 
+                                        value={fase}
+                                        onChange={handleFaseChange}
+                                        className="w-full p-3 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none shadow-md bg-[#0f172a] text-white"
+                                    >
+                                        <option value="Fase Fondasi (PAUD)" className="bg-[#111c33]">Fase Fondasi (PAUD)</option>
+                                        <option value="Fase A (Kelas 1-2 SD)" className="bg-[#111c33]">Fase A (Kelas 1-2 SD)</option>
+                                        <option value="Fase B (Kelas 3-4 SD)" className="bg-[#111c33]">Fase B (Kelas 3-4 SD)</option>
+                                        <option value="Fase C (Kelas 5-6 SD)" className="bg-[#111c33]">Fase C (Kelas 5-6 SD)</option>
+                                        <option value="Fase D (Kelas 7-9 SMP)" className="bg-[#111c33]">Fase D (Kelas 7-9 SMP)</option>
+                                        <option value="Fase E (Kelas 10 SMA/SMK)" className="bg-[#111c33]">Fase E (Kelas 10 SMA/SMK)</option>
+                                        <option value="Fase F (Kelas 11-12 SMA/SMK)" className="bg-[#111c33]">Fase F (Kelas 11-12 SMA/SMK)</option>
+                                    </select>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-semibold text-blue-100 mb-2">Mata Pelajaran</label>
+                                    <select 
+                                        value={mataPelajaran}
+                                        onChange={(e) => setMataPelajaran(e.target.value)}
+                                        className="w-full p-3 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none shadow-md bg-[#0f172a] text-white"
+                                    >
+                                        {renderMapelOptions()}
+                                    </select>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-semibold text-blue-100 mb-2">Metode Perumusan TP</label>
+                                    <select 
+                                        value={alternatifTP}
+                                        onChange={(e) => setAlternatifTP(e.target.value)}
+                                        className="w-full p-3 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none shadow-md bg-[#0f172a] text-white"
+                                    >
+                                        <option value="Alternatif 1 (Langsung berdasarkan kalimat CP)" className="bg-[#111c33]">Alternatif 1: Rumuskan Langsung dari CP</option>
+                                        <option value="Alternatif 2 (Analisis Kompetensi & Konten)" className="bg-[#111c33]">Alternatif 2: Analisis Kompetensi & Konten</option>
+                                        <option value="Alternatif 3 (Lintas Elemen CP)" className="bg-[#111c33]">Alternatif 3: Penggabungan Lintas Elemen CP</option>
+                                    </select>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-semibold text-blue-100 mb-2">Metode Pengurutan ATP</label>
+                                    <select 
+                                        value={metodePengurutan}
+                                        onChange={(e) => setMetodePengurutan(e.target.value)}
+                                        className="w-full p-3 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none shadow-md bg-[#0f172a] text-white"
+                                    >
+                                        <option value="Otomatis (Diserahkan ke AI)" className="bg-[#111c33]">Otomatis (AI memilih metode yang paling sesuai)</option>
+                                        <option value="Konkret ke Abstrak" className="bg-[#111c33]">Konkret ke Abstrak (Dari konsep berwujud ke simbolis/abstrak)</option>
+                                        <option value="Deduktif" className="bg-[#111c33]">Deduktif (Dari konsep umum/luas ke spesifik)</option>
+                                        <option value="Mudah ke Sulit" className="bg-[#111c33]">Mudah ke Sulit (Dari konten mudah ke konten paling sulit)</option>
+                                        <option value="Hierarki" className="bg-[#111c33]">Hierarki (Keterampilan dasar/mudah diajarkan sebelum yang kompleks)</option>
+                                        <option value="Prosedural" className="bg-[#111c33]">Prosedural (Mengajarkan tahapan berurutan / SOP)</option>
+                                        <option value="Scaffolding" className="bg-[#111c33]">Scaffolding (Tingkat performa naik dengan pengurangan bantuan perlahan)</option>
+                                    </select>
+                                </div>
+
+                                <label className="block text-sm font-semibold text-blue-100 mb-2 flex items-center gap-2">
+                                    <BookOpenIcon /> Masukkan Teks CP
+                                </label>
+                                <textarea
+                                    className="w-full h-40 p-3 mb-2 border border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none resize-none text-sm text-white bg-[#0f172a] custom-scrollbar shadow-inner placeholder-slate-500"
+                                    placeholder="Salin (copy) paragraf Capaian Pembelajaran dari dokumen resmi Kurikulum Merdeka dan tempel (paste) di sini..."
+                                    value={cpInput}
+                                    onChange={(e) => setCpInput(e.target.value)}
+                                ></textarea>
+                                
+                                <div className="mb-4 inline-flex items-start gap-2 px-3 py-2.5 rounded-lg bg-indigo-950/50 border border-indigo-500/30 text-xs font-medium text-indigo-200 w-full leading-tight">
+                                    <div className="mt-0.5 text-indigo-400"><SparklesIcon /></div>
+                                    <div>Sistem AI akan otomatis memetakan & memperkaya <b>Materi Esensial</b> sesuai pedoman {mataPelajaran} {fase}.</div>
+                                </div>
+                                
+                                <div className="mt-1 flex justify-end">
+                                    <button 
+                                        onClick={() => setCpInput(defaultCP)}
+                                        className="text-xs text-primary-400 hover:text-primary-300 underline font-medium"
+                                    >
+                                        Gunakan Contoh CP Matematika
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={generateATP}
+                                    disabled={isGenerating}
+                                    className={`w-full mt-4 py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${isGenerating ? 'opacity-80 cursor-not-allowed' : 'shadow-lg shadow-primary-500/30'}`}
+                                >
+                                    {isGenerating ? (
+                                        <span className="pulse-dots">Menganalisis dengan AI</span>
+                                    ) : (
+                                        <>Mulai Buat ATP <TargetIcon /></>
+                                    )}
+                                </button>
+                                
+                                {error && (
+                                    <div className="mt-4 p-3 bg-red-950/50 border border-red-500/30 text-red-200 text-sm rounded-lg flex gap-2 items-start">
+                                        <div className="mt-0.5"><AlertCircleIcon /></div>
+                                        <p>{error}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                        </div>
+
+                        {/* Result Section */}
+                        <div className="col-span-1 lg:col-span-8">
+                            <div className="glass-panel rounded-2xl overflow-hidden min-h-[600px] flex flex-col">
+                                
+                                <div className="flex border-b border-slate-700 bg-[#111c33]/50">
+                                    <button 
+                                        onClick={() => setActiveTab("analisis")}
+                                        className={`flex-1 py-4 text-sm font-semibold transition-colors flex justify-center items-center gap-2 ${activeTab === 'analisis' ? 'text-primary-400 border-b-2 border-primary-500 bg-[#1c2541]' : 'text-slate-400 hover:text-white hover:bg-[#111c33]'}`}
+                                    >
+                                        1. Analisis CP
+                                    </button>
+                                    <button 
+                                        onClick={() => setActiveTab("tp")}
+                                        className={`flex-1 py-4 text-sm font-semibold transition-colors flex justify-center items-center gap-2 ${activeTab === 'tp' ? 'text-primary-400 border-b-2 border-primary-500 bg-[#1c2541]' : 'text-slate-400 hover:text-white hover:bg-[#111c33]'}`}
+                                    >
+                                        2. Rumusan TP
+                                    </button>
+                                    <button 
+                                        onClick={() => setActiveTab("alur")}
+                                        className={`flex-1 py-4 text-sm font-semibold transition-colors flex justify-center items-center gap-2 ${activeTab === 'alur' ? 'text-primary-400 border-b-2 border-primary-500 bg-[#1c2541]' : 'text-slate-400 hover:text-white hover:bg-[#111c33]'}`}
+                                    >
+                                        3. Susunan ATP
+                                    </button>
+                                </div>
+
+                                <div className="p-6 flex-grow bg-[#111c33]">
+                                    {!result && !isGenerating && (
+                                        <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                                            <ListOrderedIcon />
+                                            <p className="mt-4 text-sm text-center px-6 text-slate-300">Identitas tersimpan. Masukkan CP dan klik "Mulai Buat ATP" di sebelah kiri untuk menghasilkan dokumen Anda.</p>
+                                        </div>
+                                    )}
+
+                                    {isGenerating && (
+                                        <div className="animate-pulse space-y-6">
+                                            <div className="h-8 bg-slate-800 rounded w-1/3"></div>
+                                            <div className="space-y-3">
+                                                <div className="h-4 bg-slate-800 rounded"></div>
+                                                <div className="h-4 bg-slate-800 rounded w-5/6"></div>
+                                                <div className="h-4 bg-slate-800 rounded w-4/6"></div>
+                                            </div>
+                                            <div className="h-8 bg-slate-800 rounded w-1/4 mt-8"></div>
+                                            <div className="space-y-3">
+                                                <div className="h-20 bg-slate-800 rounded-xl"></div>
+                                                <div className="h-20 bg-slate-800 rounded-xl"></div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {result && !isGenerating && activeTab === "analisis" && (
+                                        <div className="space-y-6 animation-fade-in">
+                                            <h2 className="text-xl font-bold text-white border-l-4 border-primary-500 pl-3">Dekomposisi Capaian Pembelajaran</h2>
+                                            <p className="text-sm text-blue-200 mb-4">Pemetaan antara keterampilan (kompetensi) yang harus dikuasai dan materi pelajaran (konten).</p>
+                                            
+                                            <div className="grid md:grid-cols-2 gap-6">
+                                                <div className="bg-[#1c2541] border border-blue-900 rounded-xl p-5">
+                                                    <h3 className="font-semibold text-blue-300 mb-3 flex items-center gap-2">
+                                                        <span className="w-6 h-6 rounded-full bg-blue-900/50 flex items-center justify-center text-xs text-blue-300">⚡</span>
+                                                        Kompetensi (Kata Kerja)
+                                                    </h3>
+                                                    <ul className="space-y-2">
+                                                        {result.analisis.kompetensi.map((item, idx) => (
+                                                            <li key={idx} className="text-sm text-blue-100 bg-[#0f172a] py-2 px-3 rounded-lg border border-slate-700 shadow-sm capitalize">{item}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                                <div className="bg-[#1c2541] border border-emerald-900 rounded-xl p-5">
+                                                    <h3 className="font-semibold text-emerald-300 mb-3 flex items-center gap-2">
+                                                        <span className="w-6 h-6 rounded-full bg-emerald-900/50 flex items-center justify-center text-xs text-emerald-300">📚</span>
+                                                        Lingkup Materi (Konten)
+                                                    </h3>
+                                                    <ul className="space-y-2">
+                                                        {result.analisis.konten.map((item, idx) => (
+                                                            <li key={idx} className="text-sm text-emerald-100 bg-[#0f172a] py-2 px-3 rounded-lg border border-slate-700 shadow-sm capitalize">{item}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {result && !isGenerating && activeTab === "tp" && (
+                                        <div className="space-y-6 animation-fade-in">
+                                            <div className="flex justify-between items-end">
+                                                <div>
+                                                    <h2 className="text-xl font-bold text-white border-l-4 border-primary-500 pl-3">Daftar Tujuan Pembelajaran</h2>
+                                                    <p className="text-sm text-blue-200 mt-1">Dirumuskan dengan mematuhi aturan <b>1 Tujuan Pembelajaran = 1 Lingkup Materi Esensial</b>.</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                {result.tujuan_pembelajaran.map((tp, idx) => (
+                                                    <div key={idx} className="flex gap-4 p-5 rounded-xl border border-slate-700 bg-[#1c2541] shadow-md hover:shadow-lg transition-all">
+                                                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-900/50 text-primary-300 flex items-center justify-center font-bold text-lg border border-primary-500/40">
+                                                            {idx + 1}
+                                                        </div>
+                                                        <div className="flex-grow pt-1">
+                                                            <p className="text-[15px] text-slate-100 font-semibold leading-relaxed mb-3">{tp.teks_tp || tp}</p>
+                                                            
+                                                            {tp.kompetensi && tp.lingkup_materi && (
+                                                                <div className="flex flex-wrap gap-2 text-[11px] font-medium">
+                                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-950/60 text-blue-300 border border-blue-900 rounded-lg">
+                                                                        <span className="text-blue-400">⚡</span> Kompetensi: {tp.kompetensi}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-950/60 text-emerald-300 border border-emerald-900 rounded-lg">
+                                                                        <span className="text-emerald-400">📚</span> Lingkup Materi: {tp.lingkup_materi}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {result && !isGenerating && activeTab === "alur" && (
+                                        <div className="space-y-6 animation-fade-in">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-700 pb-4">
+                                                <div>
+                                                    <h2 className="text-xl font-bold text-white border-l-4 border-primary-500 pl-3">Alur Tujuan Pembelajaran (ATP)</h2>
+                                                    <p className="text-sm text-blue-200 mt-1">Pembagian dan urutan logis TP berdasarkan kelas.</p>
+                                                </div>
+                                                <div className="flex flex-col items-end">
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <button 
+                                                            onClick={handleCopy}
+                                                            className="flex items-center gap-2 text-xs font-semibold px-4 py-2.5 bg-slate-800 text-slate-100 border border-slate-600 rounded-lg hover:bg-slate-700 transition-colors shadow-md"
+                                                        >
+                                                            {copied ? <><CheckIcon /> Tersalin!</> : <><CopyIcon /> Salin Teks</>}
+                                                        </button>
+                                                        <button 
+                                                            onClick={exportToWord}
+                                                            className="flex items-center gap-2 text-xs font-semibold px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/20"
+                                                        >
+                                                            <DownloadIcon /> Unduh Word (A4)
+                                                        </button>
+                                                    </div>
+                                                    {copyErrorMsg && (
+                                                        <p className="text-[10px] text-red-400 mt-2 font-medium bg-red-950/50 px-2 py-1 rounded border border-red-500/30">{copyErrorMsg}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-10 mt-6">
+                                                {result.pembagian_kelas && result.pembagian_kelas.map((kelasItem, kelasIdx) => (
+                                                    <div key={kelasIdx} className="bg-[#1c2541]/50 rounded-2xl p-5 border border-slate-700 shadow-inner">
+                                                        <h3 className="text-lg font-bold text-primary-300 mb-6 pb-3 border-b-2 border-slate-700 flex items-center gap-2">
+                                                            <span className="bg-primary-900/50 text-primary-300 p-1.5 rounded-md border border-primary-500/30"><ListOrderedIcon /></span>
+                                                            Peruntukan: {kelasItem.kelas}
+                                                        </h3>
+                                                        
+                                                        {/* SEMESTER GANJIL */}
+                                                        {kelasItem.semester_ganjil && kelasItem.semester_ganjil.length > 0 && (
+                                                            <div className="mb-8">
+                                                                <h4 className="inline-block bg-orange-950/50 text-orange-300 text-sm font-bold px-3 py-1.5 rounded-lg mb-4 border border-orange-500/30 shadow-md">
+                                                                    SEMESTER GANJIL
+                                                                </h4>
+                                                                <div className="relative border-l-2 border-orange-500/40 ml-4 pl-6 space-y-8">
+                                                                    {kelasItem.semester_ganjil.map((item, idx) => (
+                                                                        <div key={idx} className="relative">
+                                                                            <div className="absolute -left-[35px] top-1 w-6 h-6 rounded-full bg-[#111c33] border-4 border-orange-500 z-10"></div>
+                                                                            <div className="bg-[#1c2541] border border-slate-700 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow relative">
+                                                                                <div className="absolute top-0 right-0 flex flex-wrap items-center bg-[#0f172a] text-slate-300 rounded-bl-xl rounded-tr-xl border-l border-b border-slate-700 overflow-hidden shadow-sm z-20">
+                                                                                    <div className="flex items-center px-2 py-1.5 border-r border-slate-700 hover:bg-slate-900 transition-colors">
+                                                                                        <select 
+                                                                                            value={kelasIdx} 
+                                                                                            onChange={(e) => handleKelasChange(kelasIdx, 'semester_ganjil', idx, parseInt(e.target.value))}
+                                                                                            className="text-[10px] font-bold uppercase tracking-wider bg-transparent outline-none cursor-pointer max-w-[80px] md:max-w-[120px] truncate text-white"
+                                                                                        >
+                                                                                            {result.pembagian_kelas.map((k, kIdx) => (
+                                                                                                <option key={kIdx} value={kIdx} className="bg-[#111c33]">{k.kelas}</option>
+                                                                                            ))}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <div className="flex items-center px-2 py-1.5 border-r border-slate-700 hover:bg-slate-900 transition-colors">
+                                                                                        <select 
+                                                                                            value="semester_ganjil" 
+                                                                                            onChange={(e) => handleSemesterChange(kelasIdx, 'semester_ganjil', e.target.value, idx)}
+                                                                                            className="text-[10px] font-bold uppercase tracking-wider bg-transparent outline-none cursor-pointer text-white"
+                                                                                        >
+                                                                                            <option value="semester_ganjil" className="bg-[#111c33]">Ganjil</option>
+                                                                                            <option value="semester_genap" className="bg-[#111c33]">Genap</option>
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <div className="flex items-center px-2 py-1.5 bg-[#0a101f] hover:bg-slate-900 transition-colors">
+                                                                                        <span className="text-[10px] font-bold uppercase tracking-wider mr-1 text-slate-400">Urutan:</span>
+                                                                                        <select 
+                                                                                            value={idx}
+                                                                                            onChange={(e) => handleOrderChange(kelasIdx, 'semester_ganjil', idx, parseInt(e.target.value))}
+                                                                                            className="text-[11px] font-bold bg-transparent outline-none cursor-pointer text-orange-400"
+                                                                                        >
+                                                                                            {kelasItem.semester_ganjil.map((_, i) => (
+                                                                                                <option key={i} value={i} className="bg-[#111c33]">{i + 1}</option>
+                                                                                            ))}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <h4 className="font-semibold text-slate-100 text-sm mb-2 pr-[240px] leading-relaxed mt-4 md:mt-0">{item.tp}</h4>
+                                                                                <div className="mt-4 pt-3 border-t border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                                                                    <div>
+                                                                                        <span className="text-slate-400 font-medium block mb-1">Metode Pengurutan:</span>
+                                                                                        <span className="inline-block bg-slate-800 text-slate-300 px-2 py-1 rounded font-medium border border-slate-700">{item.metode_pengurutan}</span>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <span className="text-slate-400 font-medium block mb-1">Rasional & Alasan:</span>
+                                                                                        <p className="text-slate-300 leading-relaxed bg-[#0f172a] p-2 rounded border border-slate-800">{item.rasional}</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* SEMESTER GENAP */}
+                                                        {kelasItem.semester_genap && kelasItem.semester_genap.length > 0 && (
+                                                            <div>
+                                                                <h4 className="inline-block bg-blue-950/50 text-blue-300 text-sm font-bold px-3 py-1.5 rounded-lg mb-4 border border-blue-500/30 shadow-md">
+                                                                    SEMESTER GENAP
+                                                                </h4>
+                                                                <div className="relative border-l-2 border-blue-500/40 ml-4 pl-6 space-y-8">
+                                                                    {kelasItem.semester_genap.map((item, idx) => (
+                                                                        <div key={idx} className="relative">
+                                                                            <div className="absolute -left-[35px] top-1 w-6 h-6 rounded-full bg-[#111c33] border-4 border-blue-500 z-10"></div>
+                                                                            <div className="bg-[#1c2541] border border-slate-700 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow relative">
+                                                                                <div className="absolute top-0 right-0 flex flex-wrap items-center bg-[#0f172a] text-slate-300 rounded-bl-xl rounded-tr-xl border-l border-b border-slate-700 overflow-hidden shadow-sm z-20">
+                                                                                    <div className="flex items-center px-2 py-1.5 border-r border-slate-700 hover:bg-slate-900 transition-colors">
+                                                                                        <select 
+                                                                                            value={kelasIdx} 
+                                                                                            onChange={(e) => handleKelasChange(kelasIdx, 'semester_genap', idx, parseInt(e.target.value))}
+                                                                                            className="text-[10px] font-bold uppercase tracking-wider bg-transparent outline-none cursor-pointer max-w-[80px] md:max-w-[120px] truncate text-white"
+                                                                                        >
+                                                                                            {result.pembagian_kelas.map((k, kIdx) => (
+                                                                                                <option key={kIdx} value={kIdx} className="bg-[#111c33]">{k.kelas}</option>
+                                                                                            ))}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <div className="flex items-center px-2 py-1.5 border-r border-slate-700 hover:bg-slate-900 transition-colors">
+                                                                                        <select 
+                                                                                            value="semester_genap" 
+                                                                                            onChange={(e) => handleSemesterChange(kelasIdx, 'semester_genap', e.target.value, idx)}
+                                                                                            className="text-[10px] font-bold uppercase tracking-wider bg-transparent outline-none cursor-pointer text-white"
+                                                                                        >
+                                                                                            <option value="semester_ganjil" className="bg-[#111c33]">Ganjil</option>
+                                                                                            <option value="semester_genap" className="bg-[#111c33]">Genap</option>
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <div className="flex items-center px-2 py-1.5 bg-[#0a101f] hover:bg-slate-900 transition-colors">
+                                                                                        <span className="text-[10px] font-bold uppercase tracking-wider mr-1 text-slate-400">Urutan:</span>
+                                                                                        <select 
+                                                                                            value={idx}
+                                                                                            onChange={(e) => handleOrderChange(kelasIdx, 'semester_genap', idx, parseInt(e.target.value))}
+                                                                                            className="text-[11px] font-bold bg-transparent outline-none cursor-pointer text-primary-400"
+                                                                                        >
+                                                                                            {kelasItem.semester_genap.map((_, i) => (
+                                                                                                <option key={i} value={i} className="bg-[#111c33]">{i + 1}</option>
+                                                                                            ))}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <h4 className="font-semibold text-slate-100 text-sm mb-2 pr-[240px] leading-relaxed mt-4 md:mt-0">{item.tp}</h4>
+                                                                                <div className="mt-4 pt-3 border-t border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                                                                    <div>
+                                                                                        <span className="text-slate-400 font-medium block mb-1">Metode Pengurutan:</span>
+                                                                                        <span className="inline-block bg-slate-800 text-slate-300 px-2 py-1 rounded font-medium border border-slate-700">{item.metode_pengurutan}</span>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <span className="text-slate-400 font-medium block mb-1">Rasional & Alasan:</span>
+                                                                                        <p className="text-slate-300 leading-relaxed bg-[#0f172a] p-2 rounded border border-slate-800">{item.rasional}</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
